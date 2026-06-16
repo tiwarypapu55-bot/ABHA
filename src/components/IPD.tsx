@@ -785,10 +785,10 @@ export default function IPD() {
     if (!summary) return;
     const pat = patients.find(p => p.id === (summary.patient_id || summary.patientId));
     const rawHospitalInfo = storage.get(STORAGE_KEYS.HOSPITAL_INFO, null);
-    const hospitalName = rawHospitalInfo?.name || 'GLOBAL HOSPITAL';
+    const hospitalName = rawHospitalInfo?.name || 'medinex HMS';
     const hospitalSubHeader = rawHospitalInfo?.address || 'Healthcare Center';
     const hospitalPhone = rawHospitalInfo?.phone || '+91 98765 43210';
-    const hospitalEmail = rawHospitalInfo?.email || 'contact@globalhospital.com';
+    const hospitalEmail = rawHospitalInfo?.email || 'contact@medinexhms.com';
 
     // In secure iframe contexts, window.open is blocked or fails. 
     // We create a hidden iframe in the same document context to perform printing reliably.

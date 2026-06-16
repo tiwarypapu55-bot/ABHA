@@ -198,10 +198,10 @@ export default function Lab() {
   
   const [templateImage, setTemplateImage] = useState<string | null>(() => storage.get(STORAGE_KEYS.TEMPLATE_IMAGE, null));
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'GLOBAL HOSPITAL',
+    name: 'medinex HMS',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
-    email: 'accounts@dcglobal.com',
+    email: 'accounts@medinexhms.com',
     logo: null as string | null
   }));
 

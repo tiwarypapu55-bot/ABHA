@@ -1,6 +1,6 @@
 {
-  "name": "Remix: hms ayushman  new",
-  "description": "Next-Generation Hospital Management System (HMS) for clinical, administrative, and financial operations.",
+  "name": "medinex HMS by Digital Communique Private Limited",
+  "description": "Next-Generation Hospital Management System (HMS) developed by Digital Communique Private Limited.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

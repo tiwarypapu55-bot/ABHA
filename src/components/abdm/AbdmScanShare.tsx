@@ -403,7 +403,7 @@ export default function AbdmScanShare() {
                 <span className="text-[9px] bg-indigo-150 text-indigo-800 font-black px-2 py-0.5 rounded-full uppercase">
                   Scan & Share OPD Ticket
                 </span>
-                <h3 className="font-black text-slate-800 text-sm mt-2 uppercase tracking-wide">GLOBAL HOSPITAL & MATERNITY</h3>
+                <h3 className="font-black text-slate-800 text-sm mt-2 uppercase tracking-wide">medinex HMS</h3>
                 <p className="text-[8px] text-slate-400 font-mono mt-0.5">Lucknow, UP • HFR-UP-10294-A</p>
               </div>
 

@@ -568,11 +568,11 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
   };
   // Hospital Info State
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'GLOBAL HOSPITAL',
+    name: 'medinex HMS',
     address: '123, Medical Square, City Center',
     gst: '27AAAAA0000A1Z5',
     phone: '+91 98765 43210',
-    email: 'contact@globalhospital.com',
+    email: 'contact@medinexhms.com',
     logo: null as string | null
   }));
 
@@ -850,7 +850,7 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
       phone: string;
       logo?: string | null;
     }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'GLOBAL HOSPITAL',
+      name: 'medinex HMS',
       address: '123, Medical Square, City Center',
       phone: '+91 98765 43210'
     });

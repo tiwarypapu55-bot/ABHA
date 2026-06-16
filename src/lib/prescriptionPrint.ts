@@ -36,7 +36,7 @@ export function getPrescriptionPrintHtml(
   doctor?: PrintDoctor,
   hospitalInfo?: { name: string; address: string; phone: string }
 ): string {
-  const hospName = hospitalInfo?.name || 'GLOBAL HOSPITAL';
+  const hospName = hospitalInfo?.name || 'medinex HMS';
   const hospAddress = hospitalInfo?.address || '123 Healthcare Way, Medical City';
   const hospPhone = hospitalInfo?.phone || '+91 98765 43210';
   

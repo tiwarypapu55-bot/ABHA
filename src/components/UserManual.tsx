@@ -561,7 +561,7 @@ export default function UserManual() {
 
       {/* Print Footer Notice */}
       <div className="hidden print:block text-center mt-12 text-[10px] text-slate-400 font-bold border-t border-slate-100 pt-4">
-        <p>© {new Date().getFullYear()} GLOBAL HOSPITAL. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} medinex HMS. All rights reserved.</p>
         <p className="mt-1">Generated electronically from the hospital dashboard system for helpdesk reference.</p>
       </div>
     </div>

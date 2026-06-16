@@ -185,7 +185,7 @@ export default function PatientOverview({ userRole }: { userRole?: string }) {
     }
 
     const hospitalInfo = storage.get<{ name: string; address: string; phone: string }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'GLOBAL HOSPITAL',
+      name: 'medinex HMS',
       address: '123 Healthcare Way, Medical City',
       phone: '+91 98765 43210'
     });
@@ -217,7 +217,7 @@ export default function PatientOverview({ userRole }: { userRole?: string }) {
     }
 
     const hospitalInfo = storage.get<{ name: string; address: string; phone: string }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'GLOBAL HOSPITAL',
+      name: 'medinex HMS',
       address: '123 Healthcare Way, Medical City',
       phone: '+91 98765 43210'
     });
@@ -249,7 +249,7 @@ export default function PatientOverview({ userRole }: { userRole?: string }) {
     }
 
     const hospitalInfo = storage.get<{ name: string; address: string; phone: string }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'GLOBAL HOSPITAL',
+      name: 'medinex HMS',
       address: '123 Healthcare Way, Medical City',
       phone: '+91 98765 43210'
     });
@@ -323,7 +323,7 @@ View full details at: ${shareUrl}
     const doctor = staff.find(u => u.id === (prescriptionData?.doctorId || prescriptionData?.doctor_id || selectedPatient.attending_doctor_id));
     
     const hospitalInfo = storage.get<{ name: string; address: string; phone: string }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'GLOBAL HOSPITAL',
+      name: 'medinex HMS',
       address: '123 Healthcare Way, Medical City',
       phone: '+91 98765 43210'
     });

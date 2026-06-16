@@ -273,10 +273,10 @@ export default function OPD() {
   const [savedPrescriptions, setSavedPrescriptions] = useState<any[]>([]);
   const [templateImage, setTemplateImage] = useState<string | null>(storage.get(STORAGE_KEYS.TEMPLATE_IMAGE, null));
   const [hospitalInfo, setHospitalInfo] = useState(storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'GLOBAL HOSPITAL',
+    name: 'medinex HMS',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
-    email: 'accounts@dcglobal.com',
+    email: 'accounts@medinexhms.com',
     logo: null as string | null
   }));
 
@@ -965,7 +965,7 @@ export default function OPD() {
         </head>
         <body>
           <div class="header">
-            <div class="bold" style="font-size: 16px;">GLOBAL HOSPITAL</div>
+            <div class="bold" style="font-size: 16px;">medinex HMS</div>
             <div>OPD TOKEN</div>
           </div>
           
