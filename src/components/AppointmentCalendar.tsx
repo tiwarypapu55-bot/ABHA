@@ -413,7 +413,8 @@ export default function AppointmentCalendar({ appointments = [], patients = [] }
       console.warn(err);
     }
     // Consistent seeded fallback for beautiful UI
-    const seed = selectedAppointment?.id ? selectedAppointment.id.charCodeAt(selectedAppointment.id.length - 1) : 42;
+    const idStr = selectedAppointment?.id ? String(selectedAppointment.id) : '';
+    const seed = idStr ? idStr.charCodeAt(idStr.length - 1) : 42;
     return `25 Nov, 2021 at 11:06 AM (#IPD10${(seed * 73) % 1000})`;
   };
 

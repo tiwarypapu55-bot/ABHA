@@ -38,7 +38,7 @@ import {
 
 import { Link } from 'react-router-dom';
 import { MOCK_PRESCRIPTIONS, MOCK_PATIENTS, MOCK_USERS, MOCK_BILLING, MOCK_PHARMACY_BILLING, MOCK_APPOINTMENTS } from '@/mockData';
-import { FileText, Download, Eye, TrendingDown } from 'lucide-react';
+import { FileText, Download, Eye, TrendingDown, QrCode, Sparkles, HeartHandshake } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import AppointmentCalendar from '@/components/AppointmentCalendar';
 import { supabaseService } from '@/services/supabaseService';
@@ -717,25 +717,112 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link to="/abdm">
-          <Button className="w-full h-24 flex flex-col gap-1 items-center justify-center bg-medical-blue hover:bg-blue-700 shadow-lg rounded-2xl group">
-            <div className="flex items-center gap-3">
-              <Activity className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-bold">ABDM & PM-JAY Suite</span>
+      {/* India NHA ABDM Integrated Gateway Controller */}
+      <div className="bg-gradient-to-br from-[#f0f7fc] to-[#e4eff9] border border-blue-100 p-6 rounded-3xl space-y-4 shadow-sm animate-in fade-in duration-300 text-left">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-black text-[#024ea3] uppercase tracking-wider font-sans flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#01a2a6] animate-pulse" />
+              ABDM & Ayushman Bharat National Gateways Desk
+            </h3>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Verified Sandbox connectivity protocols. Direct entry nodes to registries, consent monitors, and billing claims.
+            </p>
+          </div>
+          <Badge className="bg-[#024ea3] hover:bg-[#024ea3] text-white border-none text-[9px] uppercase font-black px-2.5 py-0.5 w-fit">
+            NHA SANDBOX READY
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 1. Scan & Share */}
+          <Link 
+            to="/abdm?tab=scanshare" 
+            state={{ tab: 'scanshare' }}
+            className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-blue-50/50 hover:border-[#01a2a6]/40 hover:shadow-md transition-all group duration-200"
+          >
+            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f7fc] group-hover:bg-[#e4eff9] border border-blue-50 flex items-center justify-center text-[#024ea3] shrink-0 transition-all shadow-sm">
+              <QrCode className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <span className="text-[10px] opacity-80 uppercase font-medium tracking-widest">Manage Ayushman Card Claims & Consent Logs</span>
-          </Button>
-        </Link>
-        <Link to="/patient-overview">
-          <Button variant="outline" className="w-full h-24 flex flex-col gap-1 items-center justify-center border-medical-blue text-medical-blue hover:bg-blue-50 shadow-sm rounded-2xl group">
-            <div className="flex items-center gap-3">
-              <Users className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-bold">Clinical 360 Reports</span>
+            <div className="text-left">
+              <h4 className="text-[13px] font-[800] text-slate-800 group-hover:text-[#024ea3] leading-tight transition-colors">
+                Scan & Share (ABDM)
+              </h4>
+              <p className="text-[9px] text-[#01a2a6] font-bold uppercase tracking-wider mt-0.5 font-mono">
+                Opd ticket engine
+              </p>
             </div>
-            <span className="text-[10px] opacity-80 uppercase font-medium tracking-widest">Access Complete Medical History</span>
-          </Button>
-        </Link>
+          </Link>
+
+          {/* 2. HPR / HFR Compliance */}
+          <Link 
+            to="/abdm?tab=pmjay" 
+            state={{ tab: 'pmjay', scrollSection: 'hpr' }}
+            className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-blue-50/50 hover:border-[#01a2a6]/40 hover:shadow-md transition-all group duration-200"
+          >
+            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f7fc] group-hover:bg-[#e4eff9] border border-blue-50 flex items-center justify-center text-[#024ea3] shrink-0 transition-all shadow-sm">
+              <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-[13px] font-[800] text-slate-800 group-hover:text-[#024ea3] leading-tight transition-colors">
+                HPR / HFR Compliance
+              </h4>
+              <p className="text-[9px] text-[#01a2a6] font-bold uppercase tracking-wider mt-0.5 font-mono">
+                Staff & Facility Logs
+              </p>
+            </div>
+          </Link>
+
+          {/* 3. HIP / HIU Integration */}
+          <Link 
+            to="/abdm?tab=consent" 
+            state={{ tab: 'consent' }}
+            className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-blue-50/50 hover:border-[#01a2a6]/40 hover:shadow-md transition-all group duration-200"
+          >
+            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f7fc] group-hover:bg-[#e4eff9] border border-blue-50 flex items-center justify-center text-[#024ea3] shrink-0 transition-all shadow-sm">
+              <HeartHandshake className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-[13px] font-[800] text-slate-800 group-hover:text-[#024ea3] leading-tight transition-colors">
+                HIP / HIU Integration
+              </h4>
+              <p className="text-[9px] text-[#01a2a6] font-bold uppercase tracking-wider mt-0.5 font-mono">
+                Consent approvals
+              </p>
+            </div>
+          </Link>
+
+          {/* 4. PM-JAY / Ayushman Bharat Ready */}
+          <Link 
+            to="/abdm?tab=pmjay" 
+            state={{ tab: 'pmjay', scrollSection: 'pmjay' }}
+            className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-blue-50/50 hover:border-[#01a2a6]/40 hover:shadow-md transition-all group duration-200"
+          >
+            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f7fc] group-hover:bg-[#e4eff9] border border-blue-50 flex items-center justify-center text-[#024ea3] shrink-0 transition-all shadow-sm">
+              <Sparkles className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-[13px] font-[800] text-slate-800 group-hover:text-[#024ea3] leading-tight transition-colors">
+                PM-JAY / Ayushman Bharat Ready
+              </h4>
+              <p className="text-[9px] text-[#01a2a6] font-bold uppercase tracking-wider mt-0.5 font-mono">
+                Claim pre-authorizations
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        <div className="border-t border-blue-150/50 pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[10px] text-slate-400 font-medium">
+            All gateway actions are signed under secured TLS/SSL connection with state health authority certificates.
+          </p>
+          <Link to="/patient-overview" className="shrink-0 w-full sm:w-auto">
+            <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-blue-50/50 h-8 text-[11px] font-bold px-4 rounded-xl flex items-center gap-1.5 w-full">
+              <Users className="w-3.5 h-3.5" />
+              Access Clinical 360 Reports Desk →
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>

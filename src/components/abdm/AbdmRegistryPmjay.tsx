@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Award, 
   Search, 
@@ -103,9 +104,25 @@ const PMJAY_PACKAGES = [
 ];
 
 export default function AbdmRegistryPmjay() {
+  const location = useLocation();
   const [hprDocs, setHprDocs] = useState<HprDoctor[]>([]);
   const [claims, setClaims] = useState<PmjayClaim[]>([]);
   
+  // Custom scroll event listening to navigate directly to sections
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const scrollSection = (location.state as any)?.scrollSection || searchParams.get('scrollSection');
+    if (scrollSection) {
+      setTimeout(() => {
+        const id = scrollSection === 'hpr' ? 'abdm-hpr-hfr' : 'abdm-pmjay-claims';
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [location]);
+
   // HFR states
   const [facilities, setFacilities] = useState<any[]>(() => {
     const saved = localStorage.getItem('hms_abdm_hfr_facilities');
@@ -399,7 +416,7 @@ export default function AbdmRegistryPmjay() {
     <div className="space-y-6">
       
       {/* Registry Segment - HPR & HFR */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div id="abdm-hpr-hfr" className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Healthcare Facility Registry Info Card */}
         <Card className="shadow-sm border-slate-100 bg-white">
@@ -638,7 +655,7 @@ export default function AbdmRegistryPmjay() {
       </div>
 
       {/* PM-JAY & SACHIS Claim Processing Suite */}
-      <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider pt-2 border-t mt-4">
+      <h3 id="abdm-pmjay-claims" className="text-sm font-black text-slate-700 uppercase tracking-wider pt-2 border-t mt-4">
         Ayushman Bharat PM-JAY & SACHIS (UP) Management Suite
       </h3>
 

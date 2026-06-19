@@ -459,7 +459,7 @@ export default function IPD() {
     };
 
     fetchAuxDetailsForDischarge();
-  }, [dischargeForm.patientId, admissions]);
+  }, [dischargeForm.patientId]);
 
   const [dischargedSummaryToShow, setDischargedSummaryToShow] = useState<any>(null);
   const [isSummaryDetailsOpen, setIsSummaryDetailsOpen] = useState(false);

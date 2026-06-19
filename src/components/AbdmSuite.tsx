@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Building2, 
   Users, 
@@ -58,8 +59,19 @@ const PRELOADED_NOTIFS: NotificationLog[] = [
 ];
 
 export default function AbdmSuite() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get('tab') || (location.state as any)?.tab;
+
+  const [activeTab, setActiveTab] = useState(tabParam || 'dashboard');
   const [notifications, setNotifications] = useState<NotificationLog[]>([]);
+
+  // Keep activeTab in sync if navigation parameters change
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, location]);
 
   const loadNotifications = () => {
     const saved = localStorage.getItem('hms_abdm_notifications');
