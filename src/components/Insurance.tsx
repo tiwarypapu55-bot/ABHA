@@ -52,7 +52,7 @@ export default function Insurance() {
   const [dischargeRecords, setDischargeRecords] = useState<any[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
   const [hospitalInfo, setHospitalInfo] = useState<any>({
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
     email: 'accounts@medinexhms.com',

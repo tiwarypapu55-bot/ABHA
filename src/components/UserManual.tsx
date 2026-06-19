@@ -29,6 +29,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { storage, STORAGE_KEYS } from '@/lib/storage';
+import { isUserAdmin } from '@/lib/permissions';
 
 interface ManualSection {
   id: string;
@@ -292,7 +294,36 @@ export default function UserManual() {
     toast.success('User manual guidelines configured! Use Ctrl+P or Cmd+P to export as highly polished PDF.');
   };
 
-  const filteredSections = manualSections.filter(section => {
+  const currentUser = storage.get(STORAGE_KEYS.SESSION_USER, null);
+  const isAdmin = isUserAdmin(currentUser);
+
+  // Helper function to check if a section is accessible based on role
+  const isSectionAccessible = (section: ManualSection, user: any): boolean => {
+    if (!user) return false;
+    if (isUserAdmin(user)) return true;
+    
+    const userRole = (user.role || '').toUpperCase();
+    
+    // Normalize reception / front office / receptionist roles
+    const receptionRoles = ['RECEPTIONIST', 'RECEPTION', 'FRONT_DESK'];
+    const isUserReception = receptionRoles.includes(userRole);
+    
+    return section.role.some(r => {
+      const sectionRole = r.toUpperCase();
+      if (sectionRole === userRole) return true;
+      if (isUserReception && receptionRoles.includes(sectionRole)) return true;
+      // Radiologists should access Lab & Radiology guides
+      if (userRole === 'RADIOLOGIST' && sectionRole === 'LAB_STAFF') return true;
+      // Surgeons should access OT Management guides
+      if (userRole === 'SURGEON' && sectionRole === 'DOCTOR') return true;
+      return false;
+    });
+  };
+
+  // Pre-filter the sections so non-admins can never bypass restrictions
+  const accessibleSections = manualSections.filter(section => isSectionAccessible(section, currentUser));
+
+  const filteredSections = accessibleSections.filter(section => {
     const matchesSearch = section.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           section.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           section.steps.some(step => 
@@ -365,30 +396,45 @@ export default function UserManual() {
         </div>
 
         {/* Roles Navigation Filter Tabs */}
-        <div>
-          <Tabs defaultValue="all" className="w-full" onValueChange={setActiveManualTab}>
-            <TabsList className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 h-auto overflow-x-auto w-full max-w-full">
-              <TabsTrigger value="all" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
-                🌟 All Guidelines
-              </TabsTrigger>
-              <TabsTrigger value="super-admin" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
-                ⚙️ Administrators
-              </TabsTrigger>
-              <TabsTrigger value="doctor" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
-                🩺 Doctors (OPD/OT)
-              </TabsTrigger>
-              <TabsTrigger value="nurse" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
-                🛌 Nurses (IPD)
-              </TabsTrigger>
-              <TabsTrigger value="pharmacist" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer font-black text-amber-700">
-                💊 Pharmacists
-              </TabsTrigger>
-              <TabsTrigger value="accountant" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
-                💳 Accountants
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        {isAdmin ? (
+          <div>
+            <Tabs defaultValue="all" className="w-full" onValueChange={setActiveManualTab}>
+              <TabsList className="bg-slate-100 p-1 rounded-xl flex flex-wrap gap-1 h-auto overflow-x-auto w-full max-w-full">
+                <TabsTrigger value="all" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
+                  🌟 All Guidelines
+                </TabsTrigger>
+                <TabsTrigger value="super-admin" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
+                  ⚙️ Administrators
+                </TabsTrigger>
+                <TabsTrigger value="doctor" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
+                  🩺 Doctors (OPD/OT)
+                </TabsTrigger>
+                <TabsTrigger value="nurse" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
+                  🛌 Nurses (IPD)
+                </TabsTrigger>
+                <TabsTrigger value="pharmacist" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer font-black text-amber-700">
+                  💊 Pharmacists
+                </TabsTrigger>
+                <TabsTrigger value="accountant" className="text-xs font-bold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-800 transition-all cursor-pointer">
+                  💳 Accountants
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        ) : (
+          <div className="bg-sky-50 border border-sky-100/80 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">🔒</span>
+              <div>
+                <p className="text-xs font-black text-sky-850 uppercase tracking-tight font-extrabold text-[#0284c7]">Role-Restricted Guide</p>
+                <p className="text-xs text-slate-650 font-semibold mt-0.5">
+                  Showing custom portions of the user manual curated specifically for your role as <span className="bg-sky-100 text-[#0369a1] px-2 py-0.5 rounded-md font-black">{currentUser?.role?.replace('_', ' ')}</span>.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-slate-400 select-none hidden sm:inline">Only administrators have full documentation access.</span>
+          </div>
+        )}
       </div>
 
       {/* Manual Content Sections */}
@@ -490,78 +536,86 @@ export default function UserManual() {
       {/* Emergency Quick Action Cards / FAQ */}
       <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest pt-4 print:hidden">Frequently Asked Questions</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
-        <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
-          <CardHeader className="p-4 flex flex-row items-center gap-3">
-            <div className="p-2 rounded-xl bg-orange-100 text-orange-850">
-              <Activity className="w-4 h-4" />
-            </div>
-            <div>
-              <CardTitle className="text-xs font-black text-slate-800 uppercase">Loose tablet vs Strip stock calculation</CardTitle>
-              <CardDescription className="text-[10px] font-semibold">How does stock update?</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
-            <p className="text-xs text-secondary-text leading-relaxed font-semibold">
-              When a loose unit is sold at the POS, it deprives 1 single unit from `loose_stock`. If `loose_stock` hits zero or goes negative, the system automatically subtracts **1 Full Strip** from `stock` and adds **Units Per Strip** (e.g. 10) back into `loose_stock` to maintain accurate billing and avoid mathematical rounding errors.
-            </p>
-          </CardContent>
-        </Card>
+        {(isAdmin || currentUser?.role === 'PHARMACIST') && (
+          <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+              <div className="p-2 rounded-xl bg-orange-100 text-orange-850">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-xs font-black text-slate-800 uppercase">Loose tablet vs Strip stock calculation</CardTitle>
+                <CardDescription className="text-[10px] font-semibold">How does stock update?</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <p className="text-xs text-secondary-text leading-relaxed font-semibold">
+                When a loose unit is sold at the POS, it deprives 1 single unit from `loose_stock`. If `loose_stock` hits zero or goes negative, the system automatically subtracts **1 Full Strip** from `stock` and adds **Units Per Strip** (e.g. 10) back into `loose_stock` to maintain accurate billing and avoid mathematical rounding errors.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
-          <CardHeader className="p-4 flex flex-row items-center gap-3">
-            <div className="p-2 rounded-xl bg-sky-100 text-sky-850">
-              <Shield className="w-4 h-4" />
-            </div>
-            <div>
-              <CardTitle className="text-xs font-black text-slate-800 uppercase">Pre-Authorization and Claim Settlements</CardTitle>
-              <CardDescription className="text-[10px] font-semibold">What is the claim lifecycle?</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
-            <p className="text-xs text-secondary-text leading-relaxed font-semibold">
-              Under TPA or PM-JAY, a claim is first logged as `Pending`. Once approved, the Approved Amount is locked and compared against Total Accrued Invoice amounts. Patient Co-pay indicates what fraction must be collected physically in cash or card before marking the clearance summary as completed.
-            </p>
-          </CardContent>
-        </Card>
+        {(isAdmin || currentUser?.role === 'ACCOUNTANT' || ['RECEPTION', 'RECEPTIONIST', 'FRONT_DESK'].includes(currentUser?.role || '')) && (
+          <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+              <div className="p-2 rounded-xl bg-sky-100 text-sky-850">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-xs font-black text-slate-800 uppercase">Pre-Authorization and Claim Settlements</CardTitle>
+                <CardDescription className="text-[10px] font-semibold">What is the claim lifecycle?</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <p className="text-xs text-secondary-text leading-relaxed font-semibold">
+                Under TPA or PM-JAY, a claim is first logged as `Pending`. Once approved, the Approved Amount is locked and compared against Total Accrued Invoice amounts. Patient Co-pay indicates what fraction must be collected physically in cash or card before marking the clearance summary as completed.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
-          <CardHeader className="p-4 flex flex-row items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-100 text-indigo-850">
-              <Shield className="w-4 h-4" />
-            </div>
-            <div>
-              <CardTitle className="text-xs font-black text-slate-800 uppercase">ABDM SHA-256 e-Sign Security Seals</CardTitle>
-              <CardDescription className="text-[10px] font-semibold">How does clinical sealing protect data?</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
-            <p className="text-xs text-secondary-text leading-relaxed font-semibold">
-              Sealing clinical health cards applies a permanent electronic signature using the physician's HPR credentials. The system calculates a secure SHA-256 hash of medical data, guaranteeing to external HIU request nodes that patients records were not tampered with during gateway dispatch transactions.
-            </p>
-          </CardContent>
-        </Card>
+        {(isAdmin || ['DOCTOR', 'NURSE', 'SURGEON', 'RADIOLOGIST', 'LAB_STAFF'].includes(currentUser?.role || '')) && (
+          <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+              <div className="p-2 rounded-xl bg-indigo-100 text-indigo-850">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-xs font-black text-slate-800 uppercase">ABDM SHA-256 e-Sign Security Seals</CardTitle>
+                <CardDescription className="text-[10px] font-semibold">How does clinical sealing protect data?</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <p className="text-xs text-secondary-text leading-relaxed font-semibold">
+                Sealing clinical health cards applies a permanent electronic signature using the physician's HPR credentials. The system calculates a secure SHA-256 hash of medical data, guaranteeing to external HIU request nodes that patients records were not tampered with during gateway dispatch transactions.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
-          <CardHeader className="p-4 flex flex-row items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-850">
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <CardTitle className="text-xs font-black text-slate-800 uppercase">GSTR-1 Offline Portal File format</CardTitle>
-              <CardDescription className="text-[10px] font-semibold">How do we submit offline tax files?</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
-            <p className="text-xs text-secondary-text leading-relaxed font-semibold">
-              The downloaded offline GSTR-1 compliance file is formatted strictly as a structured tax-report JSON. It aggregates all taxable invoices separating B2B (TPA pre-audited bills) and B2C (pharmacy sales), and can be imported directly inside the official Government Offline Tool utility to save filing preparation overheads.
-            </p>
-          </CardContent>
-        </Card>
+        {(isAdmin || currentUser?.role === 'ACCOUNTANT') && (
+          <Card className="border border-slate-100 bg-slate-50/40 rounded-2xl">
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-100 text-emerald-850">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-xs font-black text-slate-800 uppercase">GSTR-1 Offline Portal File format</CardTitle>
+                <CardDescription className="text-[10px] font-semibold">How do we submit offline tax files?</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">
+              <p className="text-xs text-secondary-text leading-relaxed font-semibold">
+                The downloaded offline GSTR-1 compliance file is formatted strictly as a structured tax-report JSON. It aggregates all taxable invoices separating B2B (TPA pre-audited bills) and B2C (pharmacy sales), and can be imported directly inside the official Government Offline Tool utility to save filing preparation overheads.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Print Footer Notice */}
       <div className="hidden print:block text-center mt-12 text-[10px] text-slate-400 font-bold border-t border-slate-100 pt-4">
-        <p>© {new Date().getFullYear()} medinex HMS. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Medinex HMS by Digital Communique Private Limited. All rights reserved.</p>
         <p className="mt-1">Generated electronically from the hospital dashboard system for helpdesk reference.</p>
       </div>
     </div>

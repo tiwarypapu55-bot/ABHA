@@ -59,7 +59,7 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [templateImage, setTemplateImage] = useState<string | null>(() => storage.get(STORAGE_KEYS.TEMPLATE_IMAGE, null));
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
     email: 'accounts@medinexhms.com',
@@ -902,7 +902,7 @@ export default function Billing() {
 
             <div class="footer">
               <div style="color: #94a3b8; font-size: 11px;">This is an electronically generated document. No physical signature required.</div>
-              <div style="font-weight: 700; color: #2563eb; margin-top: 10px;">medinex HMS - HEALING HANDS, CARING HEARTS</div>
+              <div style="font-weight: 700; color: #2563eb; margin-top: 10px;">Medinex HMS by Digital Communique Private Limited - HEALING HANDS, CARING HEARTS</div>
             </div>
           </div>
           

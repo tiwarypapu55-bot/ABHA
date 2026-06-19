@@ -113,7 +113,7 @@ export default function AbdmRegistryPmjay() {
     const initial = [
       {
         hfrId: 'HFR-UP-10294-A',
-        name: 'medinex HMS (Digital Communique Private Limited)',
+        name: 'Medinex HMS by Digital Communique Private Limited',
         ownership: 'Private Empanelled',
         nabhStatus: 'Accredited (Grade A)',
         state: 'Uttar Pradesh',
@@ -168,32 +168,32 @@ export default function AbdmRegistryPmjay() {
       // 2. HPR Doctors
       const fetchedHpr = await supabaseService.getHprPractitioners();
       if (fetchedHpr && fetchedHpr.length > 0) {
-        setHprDocs(fetchedHpr);
+        setHprDocs(fetchedHpr || []);
       } else {
         for (const d of PRELOADED_HPR) {
           await supabaseService.createHprPractitioner(d);
         }
         const refreshedHpr = await supabaseService.getHprPractitioners();
-        setHprDocs(refreshedHpr);
+        setHprDocs(refreshedHpr || []);
       }
 
       // 3. Claims
       const fetchedClaims = await supabaseService.getPmjayClaims();
       if (fetchedClaims && fetchedClaims.length > 0) {
-        setClaims(fetchedClaims);
+        setClaims(fetchedClaims || []);
       } else {
         for (const cl of PRELOADED_CLAIMS) {
           await supabaseService.createPmjayClaim(cl);
         }
         const refreshedClaims = await supabaseService.getPmjayClaims();
-        setClaims(refreshedClaims);
+        setClaims(refreshedClaims || []);
       }
     };
     loadRegistries();
   }, []);
 
   const saveClaims = async (updatedList: PmjayClaim[]) => {
-    setClaims(updatedList);
+    setClaims(updatedList || []);
   };
 
   // HPR verify action
@@ -269,7 +269,7 @@ export default function AbdmRegistryPmjay() {
 
       await supabaseService.createPmjayClaim(newClaim);
       const refreshedClaims = await supabaseService.getPmjayClaims();
-      setClaims(refreshedClaims);
+      setClaims(refreshedClaims || []);
 
       // Audit logs
       const progressLog = {
@@ -444,7 +444,7 @@ export default function AbdmRegistryPmjay() {
                 <div className="flex items-center justify-between text-xs font-semibold bg-indigo-50/40 p-2.5 rounded-lg border border-indigo-100">
                   <div className="space-y-0.5">
                     <p className="font-bold text-indigo-950">Active HFR Unit</p>
-                    <p className="text-[10px] text-indigo-700/85">medinex HMS (UP)</p>
+                    <p className="text-[10px] text-indigo-700/85">Medinex HMS (UP)</p>
                   </div>
                   <Button variant="outline" size="sm" className="h-7 text-[10.5px] border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold flex items-center gap-1" onClick={() => syncFacilityHfr('HFR-UP-10294-A')}>
                     <RefreshCw className="w-3 h-3" /> Sync Active Profile

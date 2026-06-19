@@ -181,19 +181,21 @@ export default function AbdmDashboard() {
           await supabaseService.createAbdmAuditLog(log);
         }
         const refreshed = await supabaseService.getAbdmAuditLogs();
-        setAuditLogs(refreshed);
+        setAuditLogs(refreshed || []);
       }
 
       // Scan & share tokens (sandbox sessions)
       const savedScans = localStorage.getItem('hms_abdm_scan_share_tokens');
       if (savedScans) {
-        setScanTokens(JSON.parse(savedScans));
+        setScanTokens(JSON.parse(savedScans) || []);
       }
 
       // PM-JAY Claims from database
       const dbClaims = await supabaseService.getPmjayClaims();
       if (dbClaims && dbClaims.length > 0) {
         setClaims(dbClaims);
+      } else {
+        setClaims([]);
       }
     } catch (e) {
       console.warn('Error loading dynamic ABDM dashboard telemetry:', e);
@@ -219,11 +221,11 @@ export default function AbdmDashboard() {
   }, []);
 
   // Compute stats on-the-fly to guarantee perfect sync
-  const scanTodayCount = 107 + (scanTokens.length > 0 ? scanTokens.length : 3);
-  const abhaRegistrationsCount = 67 + auditLogs.filter(log => log.action?.includes('ABHA KYC Verified') || log.action?.includes('ABHA Card Generation')).length;
+  const scanTodayCount = 107 + ((scanTokens || []).length > 0 ? (scanTokens || []).length : 3);
+  const abhaRegistrationsCount = 67 + (auditLogs || []).filter(log => log && log.action?.includes('ABHA KYC Verified') || log?.action?.includes('ABHA Card Generation')).length;
   
   // Calculate PM-JAY blocked and claims count
-  const pendingClaims = claims.filter(c => c.status !== 'Paid');
+  const pendingClaims = (claims || []).filter(c => c && c.status !== 'Paid');
   const blockedSum = pendingClaims.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
   const pendingCount = 40 + pendingClaims.length;
   const blockedAmountFormatted = `₹${((430000 + blockedSum) / 100000).toFixed(2)}L`;
@@ -235,13 +237,14 @@ export default function AbdmDashboard() {
         ...item,
         scans: scanTodayCount,
         registrations: abhaRegistrationsCount,
-        claims: 39 + claims.length
+        claims: 39 + (claims || []).length
       };
     }
     return item;
   });
 
-  const filteredLogs = auditLogs.filter(log => {
+  const filteredLogs = (auditLogs || []).filter(log => {
+    if (!log) return false;
     if (logFilter === 'ALL') return true;
     if (logFilter === 'LOGIN') {
       return log.module === 'LOGIN' || log.action?.toLowerCase().includes('login') || log.action?.toLowerCase().includes('session') || log.action?.toLowerCase().includes('auth');

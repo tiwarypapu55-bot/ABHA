@@ -698,12 +698,12 @@ export default function AbdmConsentHIP() {
 
                 <div className="space-y-1">
                   <Label className="text-[10.5px] font-bold text-slate-700">Originating Facility (HFR Registry)</Label>
-                  <Select value={newDocFacility || 'medinex HMS'} onValueChange={setNewDocFacility}>
+                  <Select value={newDocFacility || 'Medinex HMS'} onValueChange={setNewDocFacility}>
                     <SelectTrigger className="h-8.5 text-xs bg-slate-50/50">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="text-xs">
-                      <SelectItem value="medinex HMS">medinex HMS</SelectItem>
+                      <SelectItem value="Medinex HMS">Medinex HMS</SelectItem>
                       <SelectItem value="Sitaram Memoir Clinic">SITARAM MEMORIAL CLINIC</SelectItem>
                     </SelectContent>
                   </Select>

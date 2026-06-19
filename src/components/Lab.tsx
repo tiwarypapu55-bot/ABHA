@@ -59,6 +59,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { canUserModify } from '@/lib/permissions';
 
 import LISTestMasters from './lis/LISTestMasters';
 import LISResultEntry from './lis/LISResultEntry';
@@ -198,7 +199,7 @@ export default function Lab() {
   
   const [templateImage, setTemplateImage] = useState<string | null>(() => storage.get(STORAGE_KEYS.TEMPLATE_IMAGE, null));
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
     email: 'accounts@medinexhms.com',
@@ -514,6 +515,11 @@ export default function Lab() {
   };
 
   const handleDeleteBill = async (id: string) => {
+    const billToDelete = bills.find(b => b.id === id);
+    if (!canUserModify(currentUser, billToDelete)) {
+      toast.error('This billing record was filled/created by Admin and can only be deleted by administrators.');
+      return;
+    }
     const success = await supabaseService.deleteInvoice(id);
     if (success) {
       setBills(bills.filter(b => b.id !== id));

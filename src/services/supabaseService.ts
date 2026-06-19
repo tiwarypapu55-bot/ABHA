@@ -3160,6 +3160,11 @@ const cacheConfig: Record<string, { storageKey: string; defaultVal: any }> = {
   getClinicalNotes: { storageKey: 'hms_clinical_notes', defaultVal: [] },
   getPharmacyItems: { storageKey: STORAGE_KEYS.INVENTORY, defaultVal: MOCK_INVENTORY },
   getPharmacySettings: { storageKey: 'hms_pharmacy_settings', defaultVal: DEFAULT_PHARMACY_SETTINGS },
+  getAbdmLinks: { storageKey: 'hms_abdm_links', defaultVal: [] },
+  getHprPractitioners: { storageKey: 'hms_abdm_hpr_docs', defaultVal: [] },
+  getAbdmConsents: { storageKey: 'hms_abdm_consents', defaultVal: [] },
+  getPmjayClaims: { storageKey: 'hms_pmjay_claims', defaultVal: [] },
+  getAbdmAuditLogs: { storageKey: 'hms_abdm_audit_logs', defaultVal: [] },
 };
 
 function updateLocalCacheOnMutation(key: string, args: any[], result: any) {
@@ -3912,9 +3917,8 @@ const CHECK_COOLDOWN_MS = 6000; // Cooldown of 6 seconds between connection chec
 
 function isNetworkFailure(err: any): boolean {
   if (!err) return false;
-  // If we have a PostgreSQL specific error code, it means we reached the server and it rejected the query
-  if (err.code) return false;
-  const msg = (err.message || '').toLowerCase();
+  if (typeof err === 'object' && err.code) return false;
+  const msg = (typeof err === 'string' ? err : (err.message || '')).toLowerCase();
   return (
     msg.includes('timeout') ||
     msg.includes('fetch') ||
@@ -4042,17 +4046,17 @@ for (const [key, value] of Object.entries(rawSupabaseService)) {
             return executeOfflineMutation(key, args);
           }
         } catch (err: any) {
-          console.error(`[Supabase Error] Mutation ${key} failed:`, err);
-          const msg = (err.message || '').toLowerCase();
-          
+          const msg = (typeof err === 'string' ? err : (err?.message || '')).toLowerCase();
           const isNetworkIssue = isNetworkFailure(err) || msg.includes('timeout') || msg.includes('fetch');
           
           if (isNetworkIssue) {
+            console.warn(`[Supabase Mutation Delayed] Mutation ${key} timed out or fell back gracefully to offline state:`, err);
             supabaseUnreachable = true;
             toastSlowConnection();
             return executeOfflineMutation(key, args);
           }
           
+          console.error(`[Supabase Error] Mutation ${key} failed:`, err);
           // Real database schema or format issue. Do not mask.
           toast.error(`Database Error: ${err.message || err}`);
           return null;
@@ -4103,14 +4107,18 @@ for (const [key, value] of Object.entries(rawSupabaseService)) {
             return null;
           }
         } catch (err: any) {
-          const msg = (err.message || '').toLowerCase();
+          const msg = (typeof err === 'string' ? err : (err?.message || '')).toLowerCase();
           const isNetworkIssue = isNetworkFailure(err) || msg.includes('timeout') || msg.includes('fetch');
           
-          if (isNetworkIssue) {
-            console.warn(`[Supabase Connection Delayed] Query ${key} timed out or fell back gracefully to offline state.`);
-            supabaseUnreachable = true;
-            toastSlowConnection();
-            return executeOfflineQuery(key, args);
+          if (isNetworkIssue || config) {
+            console.warn(`[Supabase Delayed/Offline Fallback] Query ${key} timed out or fell back gracefully to offline state:`, err);
+            if (isNetworkIssue) {
+              supabaseUnreachable = true;
+              toastSlowConnection();
+            }
+            if (config) {
+              return executeOfflineQuery(key, args);
+            }
           }
           
           console.error(`[Supabase Error] Query ${key} failed:`, err);

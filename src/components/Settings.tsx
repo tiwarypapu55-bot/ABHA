@@ -568,7 +568,7 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
   };
   // Hospital Info State
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123, Medical Square, City Center',
     gst: '27AAAAA0000A1Z5',
     phone: '+91 98765 43210',
@@ -850,7 +850,7 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
       phone: string;
       logo?: string | null;
     }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'medinex HMS',
+      name: 'Medinex HMS by Digital Communique Private Limited',
       address: '123, Medical Square, City Center',
       phone: '+91 98765 43210'
     });

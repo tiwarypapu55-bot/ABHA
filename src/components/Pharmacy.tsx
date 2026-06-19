@@ -47,6 +47,7 @@ import { storage, STORAGE_KEYS } from '@/lib/storage';
 import { supabaseService } from '@/services/supabaseService';
 import { useDataSync } from '@/hooks/useDataSync';
 import { toast } from 'sonner';
+import { canUserModify } from '@/lib/permissions';
 import { Link } from 'react-router-dom';
 import { generatePharmacyInvoiceHtml, DEFAULT_PHARMACY_SETTINGS } from '@/lib/pharmacyInvoicePrint';
 
@@ -223,6 +224,11 @@ export default function Pharmacy() {
   };
 
   const handleDeleteItem = async (id: string) => {
+    const itemToDelete = inventory.find(i => i.id === id);
+    if (!canUserModify(currentUser, itemToDelete)) {
+      toast.error('This inventory item was filled/created by Admin and can only be deleted by administrators.');
+      return;
+    }
     const success = await supabaseService.deletePharmacyItem(id);
     if (success) {
       setInventory(inventory.filter(item => item.id !== id));

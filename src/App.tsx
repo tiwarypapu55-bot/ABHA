@@ -72,19 +72,25 @@ const navItems = [
   { name: 'ABDM & PM-JAY Suite', icon: Activity, path: '/abdm', roles: ['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'LAB_STAFF', 'PHARMACIST', 'ACCOUNTANT', 'SURGEON', 'RADIOLOGIST'] },
   { name: 'OPD Management', icon: Stethoscope, path: '/opd', roles: ['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE'] },
   { name: 'IPD Management', icon: Calendar, path: '/ipd', roles: ['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'ACCOUNTANT'] },
-  { name: 'Nursing Station', icon: ClipboardList, path: '/nursing', roles: ['SUPER_ADMIN', 'NURSE', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK'] },
-  { name: 'OT Management', icon: Scissors, path: '/ot', roles: ['SUPER_ADMIN', 'DOCTOR', 'SURGEON', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK'] },
-  { name: 'Patient 360', icon: User, path: '/patient-overview', roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'ACCOUNTANT'] },
-  { name: 'Lab & Radiology', icon: FlaskConical, path: '/lab', roles: ['SUPER_ADMIN', 'LAB_STAFF', 'DOCTOR', 'ACCOUNTANT', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'RADIOLOGIST'] },
+  { name: 'Nursing Station', icon: ClipboardList, path: '/nursing', roles: ['SUPER_ADMIN', 'NURSE', 'DOCTOR'] },
+  { name: 'OT Management', icon: Scissors, path: '/ot', roles: ['SUPER_ADMIN', 'DOCTOR', 'SURGEON', 'NURSE'] },
+  { name: 'Patient 360', icon: User, path: '/patient-overview', roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'ACCOUNTANT', 'LAB_STAFF', 'PHARMACIST', 'SURGEON', 'RADIOLOGIST'] },
+  { name: 'Lab & Radiology', icon: FlaskConical, path: '/lab', roles: ['SUPER_ADMIN', 'LAB_STAFF', 'RADIOLOGIST', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'ACCOUNTANT'] },
   { name: 'Pharmacy', icon: Pill, path: '/pharmacy', roles: ['SUPER_ADMIN', 'PHARMACIST', 'DOCTOR', 'ACCOUNTANT'] },
-  { name: 'Maternity', icon: Baby, path: '/maternity', roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK'] },
-  { name: 'Staff Management', icon: Users, path: '/staff', roles: ['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'LAB_STAFF', 'PHARMACIST', 'ACCOUNTANT', 'SURGEON', 'RADIOLOGIST'] },
+  { name: 'Maternity', icon: Baby, path: '/maternity', roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE'] },
+  { name: 'Staff Management', icon: Users, path: '/staff', roles: ['SUPER_ADMIN'] },
   { name: 'User Manual & Guide', icon: BookOpen, path: '/manual', roles: ['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'LAB_STAFF', 'PHARMACIST', 'ACCOUNTANT', 'SURGEON', 'RADIOLOGIST'] },
 ];
 
 function SidebarContent({ onLogout, user, hospitalInfo }: { onLogout: () => void, user: UserType | null, hospitalInfo: any }) {
   const location = useLocation();
   
+  const isAllowed = (allowedRoles: string[]) => {
+    if (!user) return false;
+    const isUserAdmin = (user.role as string) === 'SUPER_ADMIN' || (user.role as string) === 'HOSPITAL_ADMIN' || (user.role as string) === 'ADMIN' || (user.role as string)?.toUpperCase().includes('ADMIN');
+    return isUserAdmin || allowedRoles.includes(user.role as string);
+  };
+
   const filteredNavItems = navItems.filter(item => {
     if (!user) return true;
     const isUserAdmin = (user.role as string) === 'SUPER_ADMIN' || (user.role as string) === 'HOSPITAL_ADMIN' || (user.role as string) === 'ADMIN' || (user.role as string)?.toUpperCase().includes('ADMIN');
@@ -144,12 +150,14 @@ function SidebarContent({ onLogout, user, hospitalInfo }: { onLogout: () => void
               <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{user?.role.replace('_', ' ') || "Super Admin"}</p>
             </div>
           </div>
-          <Link to="/settings">
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs h-8">
-              <Settings className="w-3 h-3" />
-              Settings
-            </Button>
-          </Link>
+          {isAllowed(['SUPER_ADMIN', 'HOSPITAL_ADMIN', 'ADMIN']) && (
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs h-8">
+                <Settings className="w-3 h-3" />
+                Settings
+              </Button>
+            </Link>
+          )}
           <Button 
             variant="ghost" 
             size="sm" 
@@ -421,7 +429,7 @@ function QuickRegisterForm({ currentUser }: { currentUser: UserType | null }) {
 
 export default function App() {
   const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123, Medical Square, City Center',
     gst: '27AAAAA0000A1Z5',
     phone: '+91 98765 43210',
@@ -492,7 +500,29 @@ export default function App() {
   );
 }
 
+function AccessDenied() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+      <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0-6V9m4-3a4 4 0 00-4-4 4 4 0 00-4 4v3H4v7a2 2 0 002 2h12a2 2 0 002-2v-7h-3V9z" />
+        </svg>
+      </div>
+      <h2 className="text-xl font-bold text-slate-800">Access Denied</h2>
+      <p className="text-sm text-slate-500 mt-2 max-w-md">
+        Your user profile role does not have authorization to access this module. Please contact your hospital administrator for queries.
+      </p>
+    </div>
+  );
+}
+
 function AppLayout({ user, hospitalInfo, handleLogout, isMobileMenuOpen, setIsMobileMenuOpen }: any) {
+  const isAllowed = (allowedRoles: string[]) => {
+    if (!user) return false;
+    const isUserAdmin = (user.role as string) === 'SUPER_ADMIN' || (user.role as string) === 'HOSPITAL_ADMIN' || (user.role as string) === 'ADMIN' || (user.role as string)?.toUpperCase().includes('ADMIN');
+    return isUserAdmin || allowedRoles.includes(user.role as string);
+  };
+
   return (
     <div className="flex h-[100dvh] bg-soft-white overflow-hidden">
       {/* Desktop Sidebar */}
@@ -522,7 +552,7 @@ function AppLayout({ user, hospitalInfo, handleLogout, isMobileMenuOpen, setIsMo
           </div>
 
           <div className="flex items-center gap-2 lg:gap-4">
-            {(user?.role === 'SUPER_ADMIN' || user?.role === 'DOCTOR' || user?.role === 'RECEPTION' || user?.role === 'RECEPTIONIST' || user?.role === 'FRONT_DESK' || user?.role === 'NURSE') && (
+            {user && isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE']) && (
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2 rounded-full px-4 border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white transition-all">
@@ -563,22 +593,22 @@ function AppLayout({ user, hospitalInfo, handleLogout, isMobileMenuOpen, setIsMo
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/registration" element={<PatientRegistration currentUser={user} />} />
-            <Route path="/abdm" element={<AbdmSuite />} />
-            <Route path="/opd" element={<OPD />} />
-            <Route path="/ipd" element={<IPD />} />
-            <Route path="/lab" element={<Lab />} />
-            <Route path="/pharmacy" element={<Pharmacy />} />
-            <Route path="/maternity" element={<Maternity />} />
-            <Route path="/ot" element={<OTManagement />} />
-            <Route path="/patient-overview" element={<PatientOverview userRole={user?.role} />} />
-            <Route path="/nursing" element={<NursingStation />} />
-            <Route path="/staff" element={<Staff />} />
-            <Route path="/manual" element={<UserManual />} />
-            <Route path="/settings" element={<SettingsComponent currentUser={user} onUserUpdate={(updatedUser) => {
+            <Route path="/registration" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'ACCOUNTANT']) ? <PatientRegistration currentUser={user} /> : <AccessDenied />} />
+            <Route path="/abdm" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'LAB_STAFF', 'PHARMACIST', 'ACCOUNTANT', 'SURGEON', 'RADIOLOGIST']) ? <AbdmSuite /> : <AccessDenied />} />
+            <Route path="/opd" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE']) ? <OPD /> : <AccessDenied />} />
+            <Route path="/ipd" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'ACCOUNTANT']) ? <IPD /> : <AccessDenied />} />
+            <Route path="/lab" element={isAllowed(['SUPER_ADMIN', 'LAB_STAFF', 'RADIOLOGIST', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK']) ? <Lab /> : <AccessDenied />} />
+            <Route path="/pharmacy" element={isAllowed(['SUPER_ADMIN', 'PHARMACIST', 'DOCTOR', 'ACCOUNTANT']) ? <Pharmacy /> : <AccessDenied />} />
+            <Route path="/maternity" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'NURSE']) ? <Maternity /> : <AccessDenied />} />
+            <Route path="/ot" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'SURGEON', 'NURSE']) ? <OTManagement /> : <AccessDenied />} />
+            <Route path="/patient-overview" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'ACCOUNTANT', 'LAB_STAFF', 'PHARMACIST', 'SURGEON', 'RADIOLOGIST']) ? <PatientOverview userRole={user?.role} /> : <AccessDenied />} />
+            <Route path="/nursing" element={isAllowed(['SUPER_ADMIN', 'NURSE', 'DOCTOR']) ? <NursingStation /> : <AccessDenied />} />
+            <Route path="/staff" element={isAllowed(['SUPER_ADMIN']) ? <Staff /> : <AccessDenied />} />
+            <Route path="/manual" element={isAllowed(['SUPER_ADMIN', 'DOCTOR', 'RECEPTIONIST', 'RECEPTION', 'FRONT_DESK', 'NURSE', 'LAB_STAFF', 'PHARMACIST', 'ACCOUNTANT', 'SURGEON', 'RADIOLOGIST']) ? <UserManual /> : <AccessDenied />} />
+            <Route path="/settings" element={isAllowed(['SUPER_ADMIN', 'HOSPITAL_ADMIN', 'ADMIN']) ? <SettingsComponent currentUser={user} onUserUpdate={(updatedUser) => {
               user = updatedUser;
               storage.set(STORAGE_KEYS.SESSION_USER, updatedUser);
-            }} />} />
+            }} /> : <AccessDenied />} />
           </Routes>
         </div>
       </main>

@@ -566,7 +566,7 @@ export default function PharmacyPOS() {
       phone: string;
       logo?: string | null;
     }>(STORAGE_KEYS.HOSPITAL_INFO, {
-      name: 'medinex HMS',
+      name: 'Medinex HMS by Digital Communique Private Limited',
       address: '123, Medical Square, City Center',
       phone: '+91 98765 43210'
     });

@@ -69,6 +69,7 @@ import {
 import { toast } from 'sonner';
 import { supabaseService } from '@/services/supabaseService';
 import { useDataSync } from '@/hooks/useDataSync';
+import { canUserModify } from '@/lib/permissions';
 
 interface AdmissionFormDataPayload {
   patient_id: string;
@@ -785,7 +786,7 @@ export default function IPD() {
     if (!summary) return;
     const pat = patients.find(p => p.id === (summary.patient_id || summary.patientId));
     const rawHospitalInfo = storage.get(STORAGE_KEYS.HOSPITAL_INFO, null);
-    const hospitalName = rawHospitalInfo?.name || 'medinex HMS';
+    const hospitalName = rawHospitalInfo?.name || 'Medinex HMS by Digital Communique Private Limited';
     const hospitalSubHeader = rawHospitalInfo?.address || 'Healthcare Center';
     const hospitalPhone = rawHospitalInfo?.phone || '+91 98765 43210';
     const hospitalEmail = rawHospitalInfo?.email || 'contact@medinexhms.com';
@@ -1125,6 +1126,11 @@ export default function IPD() {
 
   const handleDeleteNote = async (id: string) => {
     try {
+      const noteToDelete = clinicalNotes.find(n => n.id === id);
+      if (!canUserModify(currentUser, noteToDelete, users)) {
+        toast.error('This note was filled/created by Admin and can only be deleted by administrators.');
+        return;
+      }
       const res = await supabaseService.deleteClinicalNote(id);
       if (res) {
         toast.success("Clinical note removed successfully from history");
@@ -1141,6 +1147,11 @@ export default function IPD() {
   };
 
   const handleDeleteBed = async (id: string) => {
+    const bedToDelete = beds.find(b => b.id === id);
+    if (!canUserModify(currentUser, bedToDelete, users)) {
+      toast.error('This bed parameter was filled/created by Admin and can only be deleted by administrators.');
+      return;
+    }
     const success = await supabaseService.deleteBed(id);
     if (success) {
       setBeds(beds.filter(b => b.id !== id));

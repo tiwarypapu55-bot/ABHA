@@ -77,7 +77,7 @@ export interface HprDoctor {
 
 export const ABDM_FACILITY_INFO = {
   hfrId: 'HFR-UP-10294-A',
-  name: 'medinex HMS (Digital Communique Private Limited)',
+  name: 'Medinex HMS by Digital Communique Private Limited',
   ownership: 'Private Empanelled',
   nabhStatus: 'Accredited (Grade A)',
   state: 'Uttar Pradesh',

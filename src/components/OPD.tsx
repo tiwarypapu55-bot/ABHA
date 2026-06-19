@@ -60,6 +60,7 @@ import { playNotificationSound } from '@/lib/notifications';
 import { supabaseService } from '@/services/supabaseService';
 import { useDataSync } from '@/hooks/useDataSync';
 import { getPrescriptionPrintHtml } from '@/lib/prescriptionPrint';
+import { canUserModify } from '@/lib/permissions';
 
 export default function OPD() {
   const navigate = useNavigate();
@@ -273,7 +274,7 @@ export default function OPD() {
   const [savedPrescriptions, setSavedPrescriptions] = useState<any[]>([]);
   const [templateImage, setTemplateImage] = useState<string | null>(storage.get(STORAGE_KEYS.TEMPLATE_IMAGE, null));
   const [hospitalInfo, setHospitalInfo] = useState(storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'medinex HMS',
+    name: 'Medinex HMS by Digital Communique Private Limited',
     address: '123 Healthcare Way, Medical City',
     phone: '+91 98765 43210',
     email: 'accounts@medinexhms.com',
@@ -541,6 +542,10 @@ export default function OPD() {
   };
 
   const startEditPatient = (patient: any) => {
+    if (!canUserModify(currentUser, patient, users)) {
+      toast.error('This patient record was filled/created by Admin and can only be modified by administrators.');
+      return;
+    }
     setEditingPatient(patient);
     setNewPatient({
       name: patient.name || '',
@@ -574,6 +579,10 @@ export default function OPD() {
   };
 
   const startEditAppointment = (apt: any) => {
+    if (!canUserModify(currentUser, apt, users)) {
+      toast.error('This appointment was filled/created by Admin and can only be modified by administrators.');
+      return;
+    }
     setEditingAppointment(apt);
     setNewAppointment({
       patientId: apt.patient_id || apt.patientId || '',
@@ -965,7 +974,7 @@ export default function OPD() {
         </head>
         <body>
           <div class="header">
-            <div class="bold" style="font-size: 16px;">medinex HMS</div>
+            <div class="bold" style="font-size: 16px;">Medinex HMS by Digital Communique Private Limited</div>
             <div>OPD TOKEN</div>
           </div>
           
@@ -1005,6 +1014,10 @@ export default function OPD() {
 
   const handleDeletePatient = async (id: string) => {
     const patientToDelete = patients.find(p => p.id === id);
+    if (!canUserModify(currentUser, patientToDelete, users)) {
+      toast.error('This patient record was filled/created by Admin and can only be deleted by administrators.');
+      return;
+    }
     if (!window.confirm(`Are you sure you want to delete ${patientToDelete?.name}?`)) return;
 
     const success = await supabaseService.deletePatient(id);
@@ -1017,6 +1030,11 @@ export default function OPD() {
   };
 
   const handlePayAppointment = async (id: string) => {
+    const apt = appointments.find(a => a.id === id);
+    if (!canUserModify(currentUser, apt, users)) {
+      toast.error('This appointment was filled/created by Admin and its payment cannot be toggled by non-admin roles.');
+      return;
+    }
     const success = await supabaseService.updateAppointment(id, { payment_status: 'Paid' });
     if (success) {
       setAppointments(appointments.map(a => a.id === id ? { ...a, payment_status: 'Paid' } : a));
@@ -1057,6 +1075,11 @@ export default function OPD() {
   };
 
   const handleDeleteAppointment = async (id: string) => {
+    const apt = appointments.find(a => a.id === id);
+    if (!canUserModify(currentUser, apt, users)) {
+      toast.error('This appointment was filled/created by Admin and cannot be cancelled/deleted by non-admin roles.');
+      return;
+    }
     const updated = appointments.filter(a => a.id !== id);
     setAppointments(updated);
     storage.set(STORAGE_KEYS.APPOINTMENTS, updated);
