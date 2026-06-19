@@ -1763,24 +1763,40 @@ export default function OPD() {
                         onChange={(e) => setNewPatient({...newPatient, address: e.target.value})}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tpaId">TPA (Number) ID</Label>
-                      <Input 
-                        id="tpaId" 
-                        placeholder="TPA ID" 
-                        value={newPatient.tpaId}
-                        onChange={(e) => setNewPatient({...newPatient, tpaId: e.target.value})}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tpaValidity">TPA Validity</Label>
-                      <Input 
-                        id="tpaValidity" 
-                        type="date"
-                        value={newPatient.tpaValidity}
-                        onChange={(e) => setNewPatient({...newPatient, tpaValidity: e.target.value})}
-                      />
-                    </div>
+                    {newPatient.ayushmanCardNumber || newPatient.pmjayBeneficiaryId || newPatient.familyId ? (
+                      <div className="col-span-2 bg-purple-50/70 border border-purple-100 p-3 rounded-xl flex items-center justify-between gap-3 my-2">
+                        <div className="flex items-start gap-2.5">
+                          <span className="text-base">🛡️</span>
+                          <div>
+                            <p className="text-[11px] font-extrabold text-purple-950 uppercase">Ayushman Bharat Active</p>
+                            <p className="text-[10px] text-purple-700 mt-0.5">
+                              TPA identification details are not required for patients registered under the government PM-JAY scheme.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="tpaId">TPA (Number) ID</Label>
+                          <Input 
+                            id="tpaId" 
+                            placeholder="TPA ID" 
+                            value={newPatient.tpaId}
+                            onChange={(e) => setNewPatient({...newPatient, tpaId: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="tpaValidity">TPA Validity</Label>
+                          <Input 
+                            id="tpaValidity" 
+                            type="date"
+                            value={newPatient.tpaValidity}
+                            onChange={(e) => setNewPatient({...newPatient, tpaValidity: e.target.value})}
+                          />
+                        </div>
+                      </>
+                    )}
 
                     {/* ABDM & Indian Healthcare Identity Section */}
                     <div className="col-span-2 border-t border-slate-100 pt-4 mt-2">

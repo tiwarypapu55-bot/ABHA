@@ -706,6 +706,28 @@ const rawSupabaseService = {
     }
   },
 
+  deleteAppointment: async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      const list = storage.get(STORAGE_KEYS.APPOINTMENTS, MOCK_APPOINTMENTS) || [];
+      const filtered = list.filter((a: any) => a.id !== id);
+      storage.set(STORAGE_KEYS.APPOINTMENTS, filtered);
+      return true;
+    } catch (error: any) {
+      console.warn('Error deleting appointment, falling back to local storage:', error.message);
+      const list = storage.get(STORAGE_KEYS.APPOINTMENTS, MOCK_APPOINTMENTS) || [];
+      const filtered = list.filter((a: any) => a.id !== id);
+      storage.set(STORAGE_KEYS.APPOINTMENTS, filtered);
+      return true;
+    }
+  },
+
   // Prescriptions
   getPrescriptions: async (patientId?: string) => {
     try {

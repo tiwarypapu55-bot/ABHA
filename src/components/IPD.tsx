@@ -6,6 +6,7 @@ import {
   Plus,
   Search, 
   Filter, 
+  Calendar, 
   MoreVertical, 
   Activity,
   History,
@@ -403,7 +404,8 @@ export default function IPD() {
     followUpDate: '',
     medications: '',
     clinicalSummary: '',
-    dischargeDate: new Date().toISOString().substring(0, 10)
+    dischargeDate: new Date().toISOString().substring(0, 10),
+    admissionDate: ''
   });
   const [dischargeAuxDetails, setDischargeAuxDetails] = useState<{
     vitals: any[];
@@ -431,6 +433,24 @@ export default function IPD() {
           notes: nts || [],
           prescriptions: rxs || [],
         });
+
+        // Auto-fetch admission date
+        const activeAdmission = admissions.find(
+          a => (a.patient_id === pId || a.patientId === pId) && a.status === 'Admitted'
+        ) || admissions.find(
+          a => a.patient_id === pId || a.patientId === pId
+        );
+        const admDate = activeAdmission?.admission_date || activeAdmission?.admissionDate || activeAdmission?.created_at || '';
+        if (admDate) {
+          try {
+            const formattedDate = new Date(admDate).toISOString().substring(0, 10);
+            setDischargeForm(prev => ({ ...prev, admissionDate: formattedDate }));
+          } catch {
+            setDischargeForm(prev => ({ ...prev, admissionDate: new Date().toISOString().substring(0, 10) }));
+          }
+        } else {
+          setDischargeForm(prev => ({ ...prev, admissionDate: new Date().toISOString().substring(0, 10) }));
+        }
       } catch (err) {
         console.warn('Error fetching auxiliary details for discharge:', err);
       } finally {
@@ -439,7 +459,7 @@ export default function IPD() {
     };
 
     fetchAuxDetailsForDischarge();
-  }, [dischargeForm.patientId]);
+  }, [dischargeForm.patientId, admissions]);
 
   const [dischargedSummaryToShow, setDischargedSummaryToShow] = useState<any>(null);
   const [isSummaryDetailsOpen, setIsSummaryDetailsOpen] = useState(false);
@@ -677,7 +697,7 @@ export default function IPD() {
   };
 
   const handleDischargeWithSummary = async () => {
-    const { patientId, dischargeType, followUpDate, medications, clinicalSummary, dischargeDate } = dischargeForm;
+    const { patientId, dischargeType, followUpDate, medications, clinicalSummary, dischargeDate, admissionDate } = dischargeForm;
     if (!patientId) {
       toast.error('Please select an active inpatient to discharge');
       return;
@@ -715,7 +735,7 @@ export default function IPD() {
     }
 
     const patientAdmission = admissions.find(a => (a.patient_id === patientId || a.patientId === patientId));
-    const admissionDateVal = activeAdmission?.admission_date || activeAdmission?.admissionDate || activeAdmission?.created_at || patientAdmission?.admission_date || patientAdmission?.admissionDate || patientAdmission?.created_at || new Date().toISOString();
+    const admissionDateVal = admissionDate ? new Date(admissionDate).toISOString() : (activeAdmission?.admission_date || activeAdmission?.admissionDate || activeAdmission?.created_at || patientAdmission?.admission_date || patientAdmission?.admissionDate || patientAdmission?.created_at || new Date().toISOString());
 
     const summaryData = {
       id: 'sum-' + Date.now(),
@@ -776,7 +796,8 @@ export default function IPD() {
       followUpDate: '',
       medications: '',
       clinicalSummary: '',
-      dischargeDate: new Date().toISOString().substring(0, 10)
+      dischargeDate: new Date().toISOString().substring(0, 10),
+      admissionDate: ''
     });
     setDischargeSearchTerm('');
     setBypassDues(false);
@@ -3091,13 +3112,30 @@ export default function IPD() {
                   );
                 })()}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5 col-span-1">
-                    <Label className="text-xs font-bold text-slate-700">Discharge Date</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="space-y-1.5 col-span-1 bg-amber-50/50 p-2 rounded-xl border border-amber-100/75">
+                    <Label className="text-xs font-bold text-amber-900 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      Admission Date
+                    </Label>
+                    <Input
+                      type="date"
+                      value={dischargeForm.admissionDate || ''}
+                      onChange={(e) => setDischargeForm({...dischargeForm, admissionDate: e.target.value})}
+                      className="bg-white border-amber-200 text-amber-900 font-medium h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 col-span-1 bg-emerald-50/50 p-2 rounded-xl border border-emerald-100/75">
+                    <Label className="text-xs font-bold text-emerald-900 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      Discharge Date
+                    </Label>
                     <Input
                       type="date"
                       value={dischargeForm.dischargeDate}
                       onChange={(e) => setDischargeForm({...dischargeForm, dischargeDate: e.target.value})}
+                      className="bg-white border-emerald-200 text-emerald-900 font-medium h-9 text-xs"
                     />
                   </div>
 
@@ -3107,7 +3145,7 @@ export default function IPD() {
                       value={dischargeForm.dischargeType}
                       onValueChange={(v) => setDischargeForm({...dischargeForm, dischargeType: v})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 text-xs">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -3126,6 +3164,7 @@ export default function IPD() {
                       type="date"
                       value={dischargeForm.followUpDate}
                       onChange={(e) => setDischargeForm({...dischargeForm, followUpDate: e.target.value})}
+                      className="h-9 text-xs"
                     />
                   </div>
                 </div>

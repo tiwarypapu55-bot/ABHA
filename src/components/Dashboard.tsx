@@ -40,6 +40,7 @@ import { Link } from 'react-router-dom';
 import { MOCK_PRESCRIPTIONS, MOCK_PATIENTS, MOCK_USERS, MOCK_BILLING, MOCK_PHARMACY_BILLING, MOCK_APPOINTMENTS } from '@/mockData';
 import { FileText, Download, Eye, TrendingDown } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
+import AppointmentCalendar from '@/components/AppointmentCalendar';
 import { supabaseService } from '@/services/supabaseService';
 import { useDataSync } from '@/hooks/useDataSync';
 import { Loader2 } from 'lucide-react';
@@ -505,6 +506,9 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Interactive Hourly-Monthly Appointment Calendar */}
+      <AppointmentCalendar appointments={appointments} patients={patients} />
 
       {/* Front Office & Reception Walk-in Appointment Desk */}
       <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50/50 overflow-hidden animate-in fade-in duration-300">

@@ -566,19 +566,55 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
       reader.readAsDataURL(file);
     }
   };
-  // Hospital Info State
-  const [hospitalInfo, setHospitalInfo] = useState(() => storage.get(STORAGE_KEYS.HOSPITAL_INFO, {
-    name: 'Medinex HMS by Digital Communique Private Limited',
-    address: '123, Medical Square, City Center',
-    gst: '27AAAAA0000A1Z5',
-    phone: '+91 98765 43210',
-    email: 'contact@medinexhms.com',
-    logo: null as string | null
-  }));
+  // Hospital Info State (User Hospital & Clinical Institutions)
+  const [hospitalInfo, setHospitalInfo] = useState(() => {
+    const existing = storage.get(STORAGE_KEYS.HOSPITAL_INFO, null);
+    const defaults = {
+      name: 'Medinex HMS by Digital Communique Private Limited',
+      address: '123, Medical Square, City Center',
+      gst: '27AAAAA0000A1Z5',
+      phone: '+91 98765 43210',
+      email: 'contact@medinexhms.com',
+      logo: null as string | null,
+      licence_no: 'MDC-CL-2026-8841',
+      accreditation: 'NABH Platinum Accredited',
+      pan: 'AAACH1249P',
+      tan: 'DELM02931K',
+      total_beds: '150',
+      daily_opd_limit: '300',
+      bank_name: 'HDFC Bank Limited',
+      bank_account_no: '5010029310291',
+      nodal_officer: 'Dr. Ramesh Verma (Director)'
+    };
+    return existing ? { ...defaults, ...existing } : defaults;
+  });
 
   useEffect(() => {
     storage.set(STORAGE_KEYS.HOSPITAL_INFO, hospitalInfo);
   }, [hospitalInfo]);
+
+  // Developer Business Settings State (Digital Communique)
+  const [devSettings, setDevSettings] = useState(() => {
+    return storage.get('hms_developer_settings', {
+      developerName: 'Digital Communique Private Limited',
+      supportEmail: 'care@digitalcommunique.com',
+      supportPhone: '+91 85918 20192',
+      website: 'https://digitalcommunique.com',
+      licenseKey: 'DC-HMS-PRO-9988-25102',
+      subscriptionTier: 'Enterprise Infinite Tier',
+      whitelabelEnabled: false,
+      footerNote: 'Powered by Medinex HMS, Digital Communique Pvt. Ltd.',
+      communiqueApiEndpoint: 'https://api.digitalcommunique.com/v2/broadcast',
+      communiqueApiKey: 'dc_sec_prod_live_809182039182',
+      smsGatewayStatus: 'Active',
+      whatsAppAlerts: true,
+      diagnosticSmsTemplates: 'Dear {PATIENT}, your {TEST} report at {HOSPITAL} is ready. View: {URL}'
+    });
+  });
+
+  useEffect(() => {
+    storage.set('hms_developer_settings', devSettings);
+  }, [devSettings]);
 
   // Pharmacy Settings State
   const [pharmacySettings, setPharmacySettings] = useState(() => {
@@ -687,6 +723,11 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
   const handleSaveHospitalInfo = () => {
     storage.set(STORAGE_KEYS.HOSPITAL_INFO, hospitalInfo);
     toast.success('Hospital information updated and saved successfully');
+  };
+
+  const handleSaveDevSettings = () => {
+    storage.set('hms_developer_settings', devSettings);
+    toast.success('Digital Communique Developer settings updated and saved successfully');
   };
 
   const handleAddDept = async () => {
@@ -1067,7 +1108,7 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
       <Tabs defaultValue="hospital" className="space-y-6">
         <TabsList className="bg-white border shadow-sm p-1 h-auto flex-wrap justify-start">
           <TabsTrigger value="profile" className="gap-2"><UserPlus className="w-4 h-4" /> My Profile</TabsTrigger>
-          {!isAccountant && <TabsTrigger value="hospital" className="gap-2"><Building2 className="w-4 h-4" /> Hospital Info</TabsTrigger>}
+          {!isAccountant && <TabsTrigger value="hospital" className="gap-2"><Building2 className="w-4 h-4" /> Business & Hospital Settings</TabsTrigger>}
           {!isAccountant && <TabsTrigger value="departments" className="gap-2"><Stethoscope className="w-4 h-4" /> Departments</TabsTrigger>}
           <TabsTrigger value="rates" className="gap-2"><Receipt className="w-4 h-4" /> Rates & Billing</TabsTrigger>
           {!isAccountant && <TabsTrigger value="pharmacy_bill" className="gap-2"><Pill className="w-4 h-4" /> Pharmacy Bill</TabsTrigger>}
@@ -1148,81 +1189,560 @@ export default function Settings({ currentUser, onUserUpdate }: { currentUser?: 
           </Card>
         </TabsContent>
 
-        {/* Hospital Info Tab */}
+        {/* Business & Hospital Settings Tab */}
         <TabsContent value="hospital">
-          <Card className="border-none shadow-sm">
-            <CardHeader>
-              <CardTitle>Hospital Information</CardTitle>
-              <CardDescription>Configure your hospital's public identity and contact details.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-32 h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 overflow-hidden">
-                    {hospitalInfo.logo ? (
-                      <img src={hospitalInfo.logo} alt="Logo" className="w-full h-full object-contain" />
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 mb-2" />
-                        <span className="text-[10px] font-bold uppercase">Upload Logo</span>
-                      </>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full h-8 text-xs relative cursor-pointer overflow-hidden" asChild>
-                    <label className="flex items-center justify-center cursor-pointer w-full h-full">
-                      Change Logo
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/*" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setHospitalInfo({ ...hospitalInfo, logo: reader.result as string });
-                              toast.success('Hospital logo changed successfully!');
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }} 
-                      />
-                    </label>
-                  </Button>
-                </div>
+          <Tabs defaultValue="user_hospital" className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-xl border shadow-xs gap-4">
+              <TabsList className="bg-slate-100/80 p-1 rounded-lg flex w-full sm:w-auto self-stretch">
+                <TabsTrigger value="user_hospital" className="flex-1 sm:flex-initial text-xs font-semibold rounded-md px-4 py-1.5 flex items-center justify-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm">
+                  <Building2 className="w-4 h-4 text-indigo-500" />
+                  User Hospital & Institution
+                </TabsTrigger>
+                <TabsTrigger value="dev_settings" className="flex-1 sm:flex-initial text-xs font-semibold rounded-md px-4 py-1.5 flex items-center justify-center gap-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-sm">
+                  <Code className="w-4 h-4 text-pink-500" />
+                  Developer (Digital Communique)
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <Badge variant="outline" className="bg-indigo-50/50 text-indigo-700 border-indigo-100 font-mono text-[10px] tracking-wider uppercase py-0.5 px-2">
+                  Multi-Tenant Portal Active
+                </Badge>
+              </div>
+            </div>
+
+            {/* Inner Sub-Tab 1: User Hospital Settings */}
+            <TabsContent value="user_hospital" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Hospital Name</Label>
-                    <Input value={hospitalInfo.name} onChange={(e) => setHospitalInfo({...hospitalInfo, name: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>GST Number</Label>
-                    <Input value={hospitalInfo.gst} onChange={(e) => setHospitalInfo({...hospitalInfo, gst: e.target.value})} />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Address</Label>
-                    <Input value={hospitalInfo.address} onChange={(e) => setHospitalInfo({...hospitalInfo, address: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <Input value={hospitalInfo.phone} onChange={(e) => setHospitalInfo({...hospitalInfo, phone: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email Address</Label>
-                    <Input value={hospitalInfo.email} onChange={(e) => setHospitalInfo({...hospitalInfo, email: e.target.value})} />
-                  </div>
+                {/* Left Panel: Profile Logo & Status Summary */}
+                <div className="lg:col-span-1 space-y-6">
+                  <Card className="border-none shadow-sm overflow-hidden bg-gradient-to-br from-white to-slate-50/50">
+                    <CardHeader className="border-b border-slate-100/80 pb-4">
+                      <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-800">
+                        Institutional Emblem
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        Upload custom high-definition brand logo for prescription-slip headers.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6 flex flex-col items-center gap-4">
+                      <div className="w-36 h-36 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 overflow-hidden shadow-xs relative group transition-all duration-300 hover:border-indigo-400">
+                        {hospitalInfo.logo ? (
+                          <img src={hospitalInfo.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                        ) : (
+                          <div className="text-center p-3">
+                            <Upload className="w-8 h-8 mb-2 mx-auto text-slate-300 animate-bounce" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Upload Logo</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="w-full space-y-2">
+                        <Button variant="outline" size="sm" className="w-full h-9 text-xs font-semibold relative cursor-pointer overflow-hidden border-slate-200" asChild>
+                          <label className="flex items-center justify-center cursor-pointer w-full h-full gap-2">
+                            <Upload className="w-3.5 h-3.5" />
+                            Change Brand Emblem
+                            <input 
+                              type="file" 
+                              className="hidden" 
+                              accept="image/*" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setHospitalInfo({ ...hospitalInfo, logo: reader.result as string });
+                                    toast.success('Hospital brand logo changed successfully!');
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }} 
+                            />
+                          </label>
+                        </Button>
+                        {hospitalInfo.logo && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50/50"
+                            onClick={() => setHospitalInfo({ ...hospitalInfo, logo: null })}
+                          >
+                            Remove Logo
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Operation Status Badges */}
+                  <Card className="border-none shadow-sm bg-indigo-950 text-white overflow-hidden relative">
+                    <div className="absolute right-0 bottom-0 opacity-20 transform translate-x-3 translate-y-3 pointer-events-none">
+                      <Building2 className="w-28 h-28" />
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xs font-bold uppercase tracking-widest text-indigo-300">Live Quotas & Health Integration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center text-xs mb-1">
+                          <span className="text-slate-300">Total Bed Capacity Allocation</span>
+                          <span className="font-mono font-bold text-white">{hospitalInfo.total_beds || '150'} Beds</span>
+                        </div>
+                        <div className="w-full bg-indigo-900 h-2 rounded-full overflow-hidden">
+                          <div className="bg-indigo-400 h-full w-[65%]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center text-xs mb-1">
+                          <span className="text-slate-300">Daily OPD Admission Limit</span>
+                          <span className="font-mono font-bold text-teal-400">{hospitalInfo.daily_opd_limit || '300'} Patients</span>
+                        </div>
+                        <div className="w-full bg-indigo-900 h-2 rounded-full overflow-hidden">
+                          <div className="bg-teal-400 h-full w-[45%]" />
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-indigo-900 flex justify-between items-center">
+                        <span className="text-[11px] text-slate-300">Compliance Accreditation:</span>
+                        <Badge className="bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[10px] font-bold">
+                          {hospitalInfo.accreditation || 'NABH Accredited'}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
+
+                {/* Right Panel: Hospital & Institution Form */}
+                <div className="lg:col-span-2 space-y-6">
+                  <Card className="border-none shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base font-semibold text-slate-800">Institution Properties & Governance</CardTitle>
+                      <CardDescription>Update clinical registry code, operational metrics and administrative compliance details.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Hospital / Institution Name</Label>
+                          <Input 
+                            value={hospitalInfo.name} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, name: e.target.value})}
+                            placeholder="Enter Hospital / Institution Name" 
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Clinical Estb. Licence No</Label>
+                          <Input 
+                            value={hospitalInfo.licence_no || ''} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, licence_no: e.target.value})}
+                            placeholder="e.g. MDC-CL-2026-8841"
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label className="text-xs font-medium text-slate-700">Official Physical Address</Label>
+                          <Input 
+                            value={hospitalInfo.address} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, address: e.target.value})}
+                            placeholder="Enter Physical Address"
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Institutional Contact Line</Label>
+                          <Input 
+                            value={hospitalInfo.phone} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, phone: e.target.value})}
+                            placeholder="Enter Helpline Number"
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Institutional Email Helpline</Label>
+                          <Input 
+                            value={hospitalInfo.email} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, email: e.target.value})}
+                            placeholder="Enter Administration Email"
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+
+                        {/* Dropdown for Accreditation */}
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Compliance & Quality Accreditation</Label>
+                          <Select 
+                            value={hospitalInfo.accreditation || 'NABH Platinum Accredited'} 
+                            onValueChange={(val) => setHospitalInfo({...hospitalInfo, accreditation: val})}
+                          >
+                            <SelectTrigger className="bg-slate-50/50">
+                              <SelectValue placeholder="Select Quality Grade" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="NABH Platinum Accredited">NABH Platinum Accredited (Supreme)</SelectItem>
+                              <SelectItem value="NABH Gold Silver Class">NABH Gold Silver Standards</SelectItem>
+                              <SelectItem value="JCI (Joint Commission International) Standard">Joint Commission International (JCI)</SelectItem>
+                              <SelectItem value="ISO 9001:2015 Clinical Quality Certification">ISO 9001:2015 Quality Systems</SelectItem>
+                              <SelectItem value="State Health Department Approved License">State Health Dept Approved (General)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Chief Nodal Administrative Officer</Label>
+                          <Input 
+                            value={hospitalInfo.nodal_officer || ''} 
+                            onChange={(e) => setHospitalInfo({...hospitalInfo, nodal_officer: e.target.value})}
+                            placeholder="e.g. Dr. Ramesh Verma (Director)"
+                            className="bg-slate-50/50"
+                          />
+                        </div>
+                      </div>
+
+                      <Separator className="my-4" />
+                      
+                      <div className="space-y-4">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Financial Taxation & Virtual Billing Routing</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium text-slate-700">GST Registration Number</Label>
+                            <Input 
+                              value={hospitalInfo.gst} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, gst: e.target.value})}
+                              placeholder="e.g. 27AAAAA0000A1Z5"
+                              className="bg-slate-50/50 font-mono text-xs uppercase"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium text-slate-700 font-mono">PAN Unique Code</Label>
+                            <Input 
+                              value={hospitalInfo.pan || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, pan: e.target.value})}
+                              placeholder="e.g. AAACH1249P"
+                              className="bg-slate-50/50 font-mono text-xs uppercase"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium text-slate-700 font-mono">TAN Deduction Account ID</Label>
+                            <Input 
+                              value={hospitalInfo.tan || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, tan: e.target.value})}
+                              placeholder="e.g. DELM02931K"
+                              className="bg-slate-50/50 font-mono text-xs uppercase"
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-1">
+                            <Label className="text-xs font-medium text-slate-700">Financial Bank Partner</Label>
+                            <Input 
+                              value={hospitalInfo.bank_name || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, bank_name: e.target.value})}
+                              placeholder="e.g. HDFC Bank"
+                              className="bg-slate-50/50"
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label className="text-xs font-medium text-slate-700 font-mono">Virtual Account Number (VAN) for Escrow Routing</Label>
+                            <Input 
+                              value={hospitalInfo.bank_account_no || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, bank_account_no: e.target.value})}
+                              placeholder="e.g. USD / INR Virtual Escrow Account"
+                              className="bg-slate-50/50 font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium text-slate-700">Allocated OPD Quota Limit (Daily)</Label>
+                            <Input 
+                              type="number"
+                              value={hospitalInfo.daily_opd_limit || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, daily_opd_limit: e.target.value})}
+                              placeholder="e.g. 500"
+                              className="bg-slate-50/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-medium text-slate-700 font-mono">Physiotherapy / ICU / IPD Bed Count</Label>
+                            <Input 
+                              type="number"
+                              value={hospitalInfo.total_beds || ''} 
+                              onChange={(e) => setHospitalInfo({...hospitalInfo, total_beds: e.target.value})}
+                              placeholder="e.g. 150"
+                              className="bg-slate-50/50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+                      
+                      <div className="flex justify-end gap-2">
+                        <Button className="bg-medical-blue gap-2" onClick={handleSaveHospitalInfo}>
+                          <Save className="w-4 h-4" />
+                          Save Institutional Profile
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
               </div>
-              <Separator />
-              <div className="flex justify-end">
-                <Button className="bg-medical-blue gap-2" onClick={handleSaveHospitalInfo}>
-                  <Save className="w-4 h-4" />
-                  Save Changes
-                </Button>
+            </TabsContent>
+
+            {/* Inner Sub-Tab 2: Developer Business Settings (Digital Communique) */}
+            <TabsContent value="dev_settings" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left Panel: Developer Brand Identity */}
+                <div className="lg:col-span-1 space-y-6">
+                  <Card className="border-none shadow-sm bg-gradient-to-br from-slate-900 to-indigo-950 text-white overflow-hidden relative">
+                    <div className="absolute right-0 top-0 opacity-10 transform translate-x-3 -translate-y-3 pointer-events-none">
+                      <Code className="w-36 h-36 text-indigo-400" />
+                    </div>
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Code className="w-5 h-5 text-indigo-400" />
+                        <Badge className="bg-pink-550 hover:bg-pink-650 text-white border-none text-[10px] font-bold">DIGITAL COMMUNIQUE</Badge>
+                      </div>
+                      <CardTitle className="text-lg font-bold tracking-tight text-white">System Developer Profile</CardTitle>
+                      <CardDescription className="text-indigo-200 text-xs">
+                        Developer & Core SaaS Operator credentials of Digital Communique Private Limited.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-2">
+                      <div className="space-y-3 text-xs">
+                        <div className="flex items-center justify-between py-1 border-b border-indigo-900/60">
+                          <span className="text-indigo-200">Agency / Developer:</span>
+                          <span className="font-semibold text-white">{devSettings.developerName}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-1 border-b border-indigo-900/60">
+                          <span className="text-indigo-200">Corporate Website:</span>
+                          <a href={devSettings.website} target="_blank" rel="noreferrer" className="text-cyan-300 font-medium hover:underline flex items-center gap-1">
+                            digitalcommunique.com
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-between py-1 border-b border-indigo-900/60">
+                          <span className="text-indigo-200">Support Desk Mail:</span>
+                          <span className="text-white font-mono">{devSettings.supportEmail}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-1 border-b border-indigo-900/60">
+                          <span className="text-indigo-200">Support Hot-line:</span>
+                          <span className="text-white font-bold">{devSettings.supportPhone}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-1">
+                          <span className="text-indigo-200">Secure Licensing:</span>
+                          <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono text-[9px] uppercase tracking-wider">
+                            Active License
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="bg-indigo-900/40 p-3 rounded-lg border border-indigo-800/40 mt-4">
+                        <div className="text-[10px] font-bold tracking-wider text-indigo-300 uppercase mb-1">Active Subscription Plan</div>
+                        <div className="text-sm font-bold text-teal-300">{devSettings.subscriptionTier}</div>
+                        <p className="text-[10px] text-indigo-200 mt-1">Multi-branch licensing, automated audit trails and database cloud clusters synchronization.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Whitelabel / Co-branding Mode toggle */}
+                  <Card className="border-none shadow-sm">
+                    <CardHeader className="pb-3 border-b border-slate-100">
+                      <CardTitle className="text-sm font-semibold text-slate-800">Dynamic Whitelabel Integration</CardTitle>
+                      <CardDescription className="text-xs">
+                        Configure branding footers, signature notes and custom enterprise layouts.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-bold text-slate-700 block">Whitelabel (Co-Branding)</Label>
+                          <span className="text-[10px] text-slate-400 block font-normal">Suppress developer footprint on billing files</span>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={devSettings.whitelabelEnabled || false} 
+                          onChange={(e) => setDevSettings({...devSettings, whitelabelEnabled: e.target.checked})}
+                          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        />
+                      </div>
+
+                      {devSettings.whitelabelEnabled ? (
+                        <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                          <Label className="text-xs font-bold text-slate-700">Custom Footnote / Subtitle Stamp</Label>
+                          <Input 
+                            value={devSettings.footerNote || ''} 
+                            onChange={(e) => setDevSettings({...devSettings, footerNote: e.target.value})}
+                            placeholder="e.g. Whitelabeled Clinician Suite"
+                            className="bg-slate-50/50"
+                          />
+                          <p className="text-[9px] text-slate-400 leading-normal">
+                            Note: When Whitelabeling is checked, reports, logs and bills will omit &quot;Digital Communique&quot; branding in favor of your custom stamp.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1 bg-slate-50/60 p-3 rounded-lg border border-slate-100">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Default Dev Footnote Status</span>
+                          <p className="text-xs font-semibold text-slate-700 italic">
+                            &quot;{devSettings.footerNote || 'Powered by Medinex HMS, Digital Communique Pvt. Ltd.'}&quot;
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right Panel: Developer API configuration & SMS Gates */}
+                <div className="lg:col-span-2 space-y-6">
+                  <Card className="border-none shadow-sm">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base font-semibold text-slate-800">SaaS Gateway & Communique Integration</CardTitle>
+                          <CardDescription>Setup secure communication, automated billing alerts, and webhook triggers.</CardDescription>
+                        </div>
+                        <Badge className="bg-indigo-600 font-mono text-[9px] font-bold border-none text-white">API CORE V2</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">Developer License Key</Label>
+                          <Input 
+                            value={devSettings.licenseKey} 
+                            onChange={(e) => setDevSettings({...devSettings, licenseKey: e.target.value})}
+                            placeholder="Enter Licensing Key"
+                            className="bg-slate-50/50 font-mono text-xs text-indigo-700"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium text-slate-700">SaaS Subscription Class</Label>
+                          <Select 
+                            value={devSettings.subscriptionTier} 
+                            onValueChange={(val) => setDevSettings({...devSettings, subscriptionTier: val})}
+                          >
+                            <SelectTrigger className="bg-slate-50/50">
+                              <SelectValue placeholder="Select Subscription Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Enterprise Infinite Tier">Enterprise Infinite Tier (Infinite Capacity)</SelectItem>
+                              <SelectItem value="Standard Tier (100 Beds Limit)">Standard Tier (100 Beds Cap)</SelectItem>
+                              <SelectItem value="Basic Diagnostic Tier (Clinic Only)">Basic Diagnostic / OP Clinic Level</SelectItem>
+                              <SelectItem value="Developer Evaluation & Trial Sandbox">Developer Trial Sandbox Mode</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      <div className="space-y-4">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                          <span>Communique Gateway API Credentials</span>
+                          <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 lowercase bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 font-normal">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active Endpoint Integration
+                          </span>
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2 md:col-span-2">
+                            <Label className="text-xs font-medium text-slate-700">Digital Communique API Broadcast Endpoint</Label>
+                            <Input 
+                              value={devSettings.communiqueApiEndpoint} 
+                              onChange={(e) => setDevSettings({...devSettings, communiqueApiEndpoint: e.target.value})}
+                              placeholder="e.g. https://api.digitalcommunique.com/v2/broadcast"
+                              className="bg-slate-50/50 font-mono text-xs"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2 md:col-span-1">
+                            <Label className="text-xs font-medium text-slate-700 font-mono">SMS Transmitter ID</Label>
+                            <Input 
+                              value={devSettings.senderId || 'DIGCOM'} 
+                              onChange={(e) => setDevSettings({...devSettings, senderId: e.target.value})}
+                              placeholder="e.g. SENDER"
+                              className="bg-slate-50/50 font-mono text-xs text-slate-700"
+                            />
+                          </div>
+
+                          <div className="space-y-2 md:col-span-3 font-normal">
+                            <Label className="text-xs font-medium text-slate-700">Bearer Encryption Key Authentication Token</Label>
+                            <Input 
+                              type="password"
+                              value={devSettings.communiqueApiKey} 
+                              onChange={(e) => setDevSettings({...devSettings, communiqueApiKey: e.target.value})}
+                              className="bg-slate-50/50 font-mono text-xs text-indigo-700"
+                              placeholder="Enter API Bearer Authorization Token"
+                            />
+                            <p className="text-[10px] text-slate-400">
+                              Developer API Token used to authorize SMS alerts, report delivery receipts, and queueing notifications to the central hub.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Interactive Toggles */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2 border-t border-slate-100 mt-4">
+                          <div className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100/85">
+                            <div className="space-y-0.5">
+                              <span className="text-xs font-semibold text-slate-700 block">WhatsApp Broadcast Module</span>
+                              <span className="text-[10px] text-slate-400 block">Route transactional medicine reminders over official WhatsApp API</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={devSettings.whatsAppAlerts || false} 
+                              onChange={(e) => setDevSettings({...devSettings, whatsAppAlerts: e.target.checked})}
+                              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100/85">
+                            <div className="space-y-0.5">
+                              <span className="text-xs font-semibold text-slate-700 block">SMS Queue Alerting Gateway</span>
+                              <span className="text-[10px] text-slate-400 block">Deliver OPD real-time tokens to mobile networks</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={devSettings.smsGatewayStatus === 'Active'} 
+                              onChange={(e) => setDevSettings({...devSettings, smsGatewayStatus: e.target.checked ? 'Active' : 'Disabled'})}
+                              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Custom Diagnostic SMS Templates */}
+                        <div className="space-y-2 mt-4 pt-1">
+                          <Label className="text-xs font-semibold text-slate-700">Standard Diagnostics Alert SMS template</Label>
+                          <textarea 
+                            value={devSettings.diagnosticSmsTemplates || ''} 
+                            onChange={(e) => setDevSettings({...devSettings, diagnosticSmsTemplates: e.target.value})}
+                            placeholder="Enter template format"
+                            rows={3}
+                            className="w-full text-xs font-mono p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <p className="text-[10px] text-slate-400">
+                            Supports smart merge tag triggers: <code className="text-indigo-600 font-bold font-mono">&#x7b;PATIENT&#x7d;</code>, <code className="text-indigo-600 font-bold font-mono">&#x7b;TEST&#x7d;</code>, <code className="text-indigo-600 font-bold font-mono">&#x7b;HOSPITAL&#x7d;</code>, <code className="text-indigo-600 font-bold font-mono">&#x7b;URL&#x7d;</code>.
+                          </p>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex justify-end gap-2">
+                        <Button className="bg-pink-600 hover:bg-pink-700 text-white gap-2" onClick={handleSaveDevSettings}>
+                          <Save className="w-4 h-4" />
+                          Save Developer Configuration
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
               </div>
-            </CardContent>
-          </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* Pharmacy Bill Tab */}

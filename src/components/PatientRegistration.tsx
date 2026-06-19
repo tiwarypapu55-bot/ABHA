@@ -38,6 +38,7 @@ export default function PatientRegistration({ currentUser }: PatientRegistration
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [smartText, setSmartText] = useState('');
+  const [isAyushmanPatient, setIsAyushmanPatient] = useState(false);
   
   // Patient details state
   const [formData, setFormData] = useState({
@@ -745,36 +746,95 @@ export default function PatientRegistration({ currentUser }: PatientRegistration
                   </div>
                 </div>
 
-                {/* 3. TPA & External Insurance */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-600"></span>
-                    3. Corporate Insurance & TPA Cards (If Applicable)
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="reg-tpa" className="text-[11px] font-bold text-slate-600">TPA Identification Number</Label>
-                      <Input 
-                        id="reg-tpa" 
-                        placeholder="TPA Identification Card No" 
-                        value={formData.tpaId}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tpaId: e.target.value }))}
-                        className="h-10 rounded-xl"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="reg-tpaval" className="text-[11px] font-bold text-slate-600">TPA Card Validity</Label>
-                      <Input 
-                        id="reg-tpaval" 
-                        type="date"
-                        value={formData.tpaValidity}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tpaValidity: e.target.value }))}
-                        className="h-10 rounded-xl"
-                      />
+                {/* 3. Coverage Card & Insurance Type Selection */}
+                <div className="space-y-4 border-t pt-6 border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-600"></span>
+                      3. Coverage & Insurance Details
+                    </h3>
+                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 p-1 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAyushmanPatient(false);
+                        }}
+                        className={`text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-all ${
+                          !isAyushmanPatient 
+                            ? 'bg-white text-cyan-700 shadow-sm border border-slate-200/60' 
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        General / Corporate TPA
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAyushmanPatient(true);
+                          setFormData(prev => ({ ...prev, tpaId: '', tpaValidity: '' }));
+                        }}
+                        className={`text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                          isAyushmanPatient 
+                            ? 'bg-purple-600 text-white shadow-sm' 
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        <ShieldCheck className="w-3 h-3 text-current" />
+                        Ayushman Patient (PM-JAY)
+                      </button>
                     </div>
                   </div>
+
+                  {isAyushmanPatient ? (
+                    <div className="bg-purple-50/60 border border-purple-100 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">🛡️</span>
+                        <div>
+                          <p className="text-xs font-black text-purple-950 uppercase tracking-wide">Ayushman Bharat Active</p>
+                          <p className="text-[11px] text-purple-700 mt-0.5">
+                            TPA identification number and validity details are not required for patients registered under the flagship government PM-JAY scheme.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById('reg-ayush');
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth' });
+                            el.focus();
+                          }
+                        }}
+                        className="bg-purple-100 hover:bg-purple-200 text-purple-800 text-[10px] font-extrabold h-8 rounded-lg px-3 transition-colors border border-purple-200"
+                      >
+                        Scroll to Ayushman Block ↓
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="reg-tpa" className="text-[11px] font-bold text-slate-600">TPA Identification Number</Label>
+                        <Input 
+                          id="reg-tpa" 
+                          placeholder="TPA Identification Card No" 
+                          value={formData.tpaId}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tpaId: e.target.value }))}
+                          className="h-10 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="reg-tpaval" className="text-[11px] font-bold text-slate-600">TPA Card Validity</Label>
+                        <Input 
+                          id="reg-tpaval" 
+                          type="date"
+                          value={formData.tpaValidity}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tpaValidity: e.target.value }))}
+                          className="h-10 rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. ABDM Digital Indian Healthcare Identity Registers */}
