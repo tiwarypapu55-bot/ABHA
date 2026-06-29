@@ -350,7 +350,7 @@ export default function UserManual() {
           </div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-medical-blue" />
-            Global Hospital User Manual
+            Medinex Hms User Manual
           </h1>
           <p className="text-secondary-text text-xs font-semibold mt-1">
             Complete interactive workflows, module rules, and live reference guidelines for admin, doctors, nurses, and pharmacists.

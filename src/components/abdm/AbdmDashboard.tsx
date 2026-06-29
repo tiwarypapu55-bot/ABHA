@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, 
   Users, 
@@ -168,6 +168,7 @@ export default function AbdmDashboard() {
   const [scanTokens, setScanTokens] = useState<any[]>([]);
   const [claims, setClaims] = useState<any[]>([]);
   const [logFilter, setLogFilter] = useState<'ALL' | 'LOGIN' | 'RECORD_ACCESS' | 'CONSENT' | 'CLAIM' | 'API'>('ALL');
+  const seedingRef = useRef(false);
   
   const loadDynamicData = async () => {
     try {
@@ -176,12 +177,21 @@ export default function AbdmDashboard() {
       if (dbLogs && dbLogs.length > 0) {
         setAuditLogs(dbLogs);
       } else {
-        // Seed default logs if DB table is empty
-        for (const log of DEFAULT_AUDIT_LOGS) {
-          await supabaseService.createAbdmAuditLog(log);
+        if (seedingRef.current) {
+          console.log('Telemetry seeding is already in progress, skipping recursive execution...');
+          return;
         }
-        const refreshed = await supabaseService.getAbdmAuditLogs();
-        setAuditLogs(refreshed || []);
+        seedingRef.current = true;
+        try {
+          // Seed default logs if DB table is empty
+          for (const log of DEFAULT_AUDIT_LOGS) {
+            await supabaseService.createAbdmAuditLog(log);
+          }
+          const refreshed = await supabaseService.getAbdmAuditLogs();
+          setAuditLogs(refreshed || []);
+        } finally {
+          seedingRef.current = false;
+        }
       }
 
       // Scan & share tokens (sandbox sessions)

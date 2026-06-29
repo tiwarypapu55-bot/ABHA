@@ -314,7 +314,7 @@ export default function Dashboard() {
               ★ SYSTEM CONTROLLER ACTIVE
             </span>
             <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl text-white">
-              Global Hospital Analytics
+              Medinex Hms Analytics
             </h1>
             <p className="text-indigo-100 text-sm font-medium max-w-xl">
               Live updates across all panels, overall databases, pharmacies, clinical admissions, and real-time ledger audits.
